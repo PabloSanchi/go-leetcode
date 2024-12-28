@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package commons;
+
+option go_package = "../commons";
+
+message Message {
+  string content = 1;
+}

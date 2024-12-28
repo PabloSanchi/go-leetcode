@@ -14,12 +14,15 @@ func main() {
 	}
 	defer cl.Disconnect()
 
-	msg := commons.NewMessage("Hello from producer!")
+	topic := "default"
+	msg := &commons.Message{
+		Content: "hello from producer!",
+	}
 
-	sent := cl.Publish("default", msg)
+	sent := cl.Publish(topic, msg)
 	if !sent {
 		slog.Error("failed to publish message")
 	}
 
-	slog.Info("message published successfully", "topic", "default", "message", msg)
+	slog.Info("message published successfully", "topic", topic, "message", msg)
 }
