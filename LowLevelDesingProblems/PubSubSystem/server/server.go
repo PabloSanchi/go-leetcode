@@ -2,17 +2,15 @@ package server
 
 import (
 	"bufio"
+	"google.golang.org/protobuf/proto"
+	"io"
 	"log/slog"
 	"net"
-	"regexp"
-	"strings"
+	"pubsub/commons"
 )
 
 const (
-	ADDR               string = ":8080"
-	SUBSCRIBE_PREFIX   string = "SUBSCRIBE"
-	UNSUBSCRIBE_PREFIX string = "UNSUBSCRIBE"
-	PUBLISH_PREFIX     string = "PUBLISH"
+	ADDR string = ":8080"
 )
 
 type ConfigParam func(config *Config)
@@ -85,39 +83,40 @@ func (ps *PubSub) Start() {
 }
 
 func (ps *PubSub) handleConnection(conn net.Conn) {
-	addr := conn.RemoteAddr()
 	reader := bufio.NewReader(conn)
 
 	for {
-		msg, err := reader.ReadString('\n')
-
-		if err != nil {
-			if err.Error() == "EOF" {
-				slog.Info("client disconnected", "addr", addr.String())
+		var msg []byte
+		if err := commons.ReadMsg(reader, &msg); err != nil {
+			if err == io.EOF {
+				slog.Info("client disconnected", "address", conn.RemoteAddr())
 			} else {
-				slog.Error("could not read message from client", "addr", addr.String(), "error", err)
+				slog.Error("could not unmarshal client message", "error", err)
 			}
 			conn.Close()
 			return
 		}
 
-		if strings.HasPrefix(msg, SUBSCRIBE_PREFIX) {
-			slog.Info("received subscribe message", "msg", msg)
-			topic := regexp.MustCompile(`\w+\((.*?)\)`).FindStringSubmatch(msg)[1]
-			ps.handleSubscribe(conn, topic)
-		} else if strings.HasPrefix(msg, UNSUBSCRIBE_PREFIX) {
-			slog.Info("received unsubscribe message", "msg", msg)
-			topic := regexp.MustCompile(`\w+\((.*?)\)`).FindStringSubmatch(msg)[1]
-			ps.handleUnsubscribe(conn, topic)
-		} else if strings.HasPrefix(msg, PUBLISH_PREFIX) {
-			slog.Info("received publish message", "msg", msg)
-			matches := regexp.MustCompile(`\w+\((.*?)\): (.*)`).FindStringSubmatch(msg)
-			topic := matches[1]
-			clientMsg := matches[2]
+		var command commons.Command
+		if err := proto.Unmarshal(msg, &command); err != nil {
+			slog.Error("could not unmarshal command", "error", err)
+			continue
+		}
 
-			ps.handlePublish(topic, []byte(clientMsg))
+		if command.Type == commons.Command_SUBSCRIBE {
+			ps.handleSubscribe(conn, command.Topic)
+		} else if command.Type == commons.Command_UNSUBSCRIBE {
+			ps.handleUnsubscribe(conn, command.Topic)
+		} else if command.Type == commons.Command_PUBLISH {
+			var clientMsg []byte
+			if err := commons.Marshal(&clientMsg, command.Msg); err != nil {
+				slog.Error("could not create message", "error", err)
+				continue
+			}
+
+			ps.handlePublish(command.Topic, clientMsg)
 		} else {
-			slog.Info("unknown message", "msg", msg)
+			slog.Info("client disconnected ", "address", conn.RemoteAddr())
 		}
 
 	}
@@ -125,6 +124,7 @@ func (ps *PubSub) handleConnection(conn net.Conn) {
 }
 
 func (ps *PubSub) handleSubscribe(conn net.Conn, topic string) bool {
+	slog.Info("client subscribed", "topic", topic)
 	t, ok := ps.topics[topic]
 	if !ok {
 		slog.Error("topic does not exist", "topic", topic)
@@ -136,6 +136,7 @@ func (ps *PubSub) handleSubscribe(conn net.Conn, topic string) bool {
 }
 
 func (ps *PubSub) handleUnsubscribe(conn net.Conn, topic string) bool {
+	slog.Info("client unsubscribed", "topic", topic)
 	t, ok := ps.topics[topic]
 	if !ok {
 		slog.Error("topic does not exist", "topic", topic)
@@ -148,6 +149,7 @@ func (ps *PubSub) handleUnsubscribe(conn net.Conn, topic string) bool {
 }
 
 func (ps *PubSub) handlePublish(topic string, msg []byte) {
+	slog.Info("publishing message", "topic", topic)
 	t, ok := ps.topics[topic]
 	if !ok {
 		slog.Error("topic does not exist", "topic", topic)

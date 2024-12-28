@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package commons;
+
+import "message.proto";
+
+option go_package = "../commons";
+
+message Command {
+  enum CommandType {
+    SUBSCRIBE = 0;
+    UNSUBSCRIBE = 1;
+    PUBLISH = 2;
+  }
+
+  CommandType type = 1;
+  string topic = 2;
+  optional Message msg = 3;
+}

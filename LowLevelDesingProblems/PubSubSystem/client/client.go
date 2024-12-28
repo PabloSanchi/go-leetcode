@@ -3,12 +3,10 @@ package client
 import (
 	"bufio"
 	"context"
-	"encoding/json"
-	"fmt"
+	"google.golang.org/protobuf/proto"
 	"log/slog"
 	"net"
 	"pubsub/commons"
-	"strings"
 )
 
 type Client struct {
@@ -41,9 +39,19 @@ func (c *Client) Disconnect() {
 
 func (c *Client) Subscribe(topic string) (<-chan commons.Message, error) {
 	msgChan := make(chan commons.Message)
+	command := &commons.Command{
+		Type:  commons.Command_SUBSCRIBE,
+		Topic: topic,
+	}
 
-	_, err := c.conn.Write([]byte("SUBSCRIBE(" + topic + ")\n"))
-	if err != nil {
+	var encodedCmd []byte
+	if err := commons.Marshal(&encodedCmd, command); err != nil {
+		slog.Error("could not create command message")
+		close(msgChan)
+		return msgChan, err
+	}
+
+	if _, err := c.conn.Write(encodedCmd); err != nil {
 		slog.Error("could not subscribe", "topic", topic)
 		close(msgChan)
 		return msgChan, err
@@ -58,14 +66,14 @@ func (c *Client) Subscribe(topic string) (<-chan commons.Message, error) {
 				slog.Info("client unsubscribed, closing data channel")
 				return
 			default:
-				rawMsg, err := reader.ReadString('\n')
-				if err != nil {
+				var rawMsg []byte
+				if err := commons.ReadMsg(reader, &rawMsg); err != nil {
 					slog.Error("could not read message from server")
 					return
 				}
+
 				var msg commons.Message
-				err = json.Unmarshal([]byte(strings.TrimSpace(rawMsg)), &msg)
-				if err != nil {
+				if err := proto.Unmarshal(rawMsg, &msg); err != nil {
 					slog.Error("error deserializing topic message", err)
 					continue
 				}
@@ -80,9 +88,19 @@ func (c *Client) Subscribe(topic string) (<-chan commons.Message, error) {
 }
 
 func (c *Client) Unsubscribe(topic string) bool {
-	_, err := c.conn.Write([]byte("UNSUBSCRIBE(" + topic + ")\n"))
-	if err != nil {
-		fmt.Println(err)
+	command := &commons.Command{
+		Type:  commons.Command_UNSUBSCRIBE,
+		Topic: topic,
+	}
+
+	var encodedCmd []byte
+	if err := commons.Marshal(&encodedCmd, command); err != nil {
+		slog.Error("could not create command message")
+		return false
+	}
+
+	if _, err := c.conn.Write(encodedCmd); err != nil {
+		slog.Error("could not unsubscribe", "topic", topic)
 		return false
 	}
 
@@ -90,16 +108,20 @@ func (c *Client) Unsubscribe(topic string) bool {
 	return true
 }
 
-func (c *Client) Publish(topic string, msg commons.Message) bool {
-	decodedMsg, err := json.Marshal(msg)
-	if err != nil {
-		slog.Error("could not serialize message")
+func (c *Client) Publish(topic string, msg *commons.Message) bool {
+	command := &commons.Command{
+		Type:  commons.Command_PUBLISH,
+		Topic: topic,
+		Msg:   msg,
+	}
+
+	var encodedCmd []byte
+	if err := commons.Marshal(&encodedCmd, command); err != nil {
+		slog.Error("could not create command message")
 		return false
 	}
 
-	message := fmt.Sprintf("PUBLISH(%s): %s\n", topic, string(decodedMsg))
-	_, err = c.conn.Write([]byte(message))
-	if err != nil {
+	if _, err := c.conn.Write(encodedCmd); err != nil {
 		slog.Error("could not publish message")
 		return false
 	}
