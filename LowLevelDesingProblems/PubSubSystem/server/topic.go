@@ -10,7 +10,7 @@ type Topic struct {
 	id          string
 	subscribers map[net.Conn]struct{} // empty structs occupies 0 bytes
 
-	l sync.Mutex
+	l sync.RWMutex
 }
 
 func NewTopic(id string) *Topic {
@@ -33,8 +33,8 @@ func (t *Topic) RemoveSubscriber(conn net.Conn) {
 }
 
 func (t *Topic) Broadcast(msg []byte) {
-	t.l.Lock()
-	defer t.l.Unlock()
+	t.l.RLock()
+	defer t.l.RUnlock()
 
 	msg = append(msg, byte('\n'))
 
