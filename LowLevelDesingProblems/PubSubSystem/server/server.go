@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"errors"
 	"google.golang.org/protobuf/proto"
 	"io"
 	"log/slog"
@@ -83,13 +84,14 @@ func (ps *PubSub) Start() {
 }
 
 func (ps *PubSub) handleConnection(conn net.Conn) {
+	addr := conn.RemoteAddr()
 	reader := bufio.NewReader(conn)
 
 	for {
-		var msg []byte
-		if err := commons.ReadMsg(reader, &msg); err != nil {
-			if err == io.EOF {
-				slog.Info("client disconnected", "address", conn.RemoteAddr())
+		var command commons.Command
+		if err := readAndUnmarshal(reader, &command); err != nil {
+			if errors.Is(err, io.EOF) {
+				slog.Info("client disconnected", "address", addr)
 			} else {
 				slog.Error("could not unmarshal client message", "error", err)
 			}
@@ -97,17 +99,14 @@ func (ps *PubSub) handleConnection(conn net.Conn) {
 			return
 		}
 
-		var command commons.Command
-		if err := proto.Unmarshal(msg, &command); err != nil {
-			slog.Error("could not unmarshal command", "error", err)
-			continue
-		}
-
-		if command.Type == commons.Command_SUBSCRIBE {
+		switch command.Type {
+		case commons.Command_SUBSCRIBE:
 			ps.handleSubscribe(conn, command.Topic)
-		} else if command.Type == commons.Command_UNSUBSCRIBE {
+
+		case commons.Command_UNSUBSCRIBE:
 			ps.handleUnsubscribe(conn, command.Topic)
-		} else if command.Type == commons.Command_PUBLISH {
+
+		case commons.Command_PUBLISH:
 			var clientMsg []byte
 			if err := commons.Marshal(&clientMsg, command.Msg); err != nil {
 				slog.Error("could not create message", "error", err)
@@ -115,12 +114,26 @@ func (ps *PubSub) handleConnection(conn net.Conn) {
 			}
 
 			ps.handlePublish(command.Topic, clientMsg)
-		} else {
-			slog.Info("client disconnected ", "address", conn.RemoteAddr())
+
+		default:
+			slog.Warn("unknown command type or client disconnected", "type", command.Type, "address", addr)
 		}
 
 	}
 
+}
+
+func readAndUnmarshal(reader *bufio.Reader, command *commons.Command) error {
+	var msg []byte
+	if err := commons.ReadMsg(reader, &msg); err != nil {
+		return err
+	}
+
+	if err := proto.Unmarshal(msg, command); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ps *PubSub) handleSubscribe(conn net.Conn, topic string) bool {
