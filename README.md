@@ -1,4 +1,4 @@
-# Learn Go by solving leetcode problems and interesting go features
+# Improve your software interviews by solving problems in Go
 
 ## Divided by category
 - DP: Dynamic programing
