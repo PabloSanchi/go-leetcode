@@ -44,7 +44,7 @@ func (c *Client) Subscribe(topic string) (<-chan commons.Message, error) {
 
 	_, err := c.conn.Write([]byte("SUBSCRIBE(" + topic + ")\n"))
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("could not subscribe", "topic", topic)
 		close(msgChan)
 		return msgChan, err
 	}
