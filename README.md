@@ -6,9 +6,9 @@ Remember that in order to learn, is better to do it by yourself first.
 - DP: Dynamic programing
   - [Regular Expression Matching](dp/regular_expression)
 - List: Linked and Double linked lists (custom implementations)
-  - [Plus One](list/plus_one)
-  - [Remove Duplicates](list/remove_duplicates)
-  - [Rotate Lists](list/rotate_lists)
+  - [Plus One](lists/plus_one)
+  - [Remove Duplicates](lists/remove_duplicates)
+  - [Rotate Lists](lists/rotate_lists)
 - Strings: String manipulation and algorithms
   - [String Comprehension 3](strings/string_comprehension_3)
 - Trees: Any kind of tree related problems
