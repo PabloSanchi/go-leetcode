@@ -12,7 +12,7 @@ type ParkingLevel struct {
 	spots        []*Spot
 	spotsPerType map[VehicleType]int
 
-	l sync.Mutex
+	l sync.RWMutex
 }
 
 // NewParkingLevel 50% for CARS, 25% for MOTORCYCLES, 25% for TRUCKS
@@ -36,14 +36,14 @@ func NewParkingLevel(floor uint, size int) *ParkingLevel {
 }
 
 func (pl *ParkingLevel) IsFull() bool {
-	defer pl.l.Unlock()
-	pl.l.Lock()
+	defer pl.l.RUnlock()
+	pl.l.RLock()
 	return pl.Size == pl.MaxSize
 }
 
-// CanPark is not thread-safe due to two cars can join at the same so they both can park
-// at first sight, but only one of them will be able to take the spot
 func (pl *ParkingLevel) CanPark(vehicle *Vehicle) bool {
+	defer pl.l.RUnlock()
+	pl.l.RLock()
 	return pl.spotsPerType[vehicle.Type] > 0
 }
 
