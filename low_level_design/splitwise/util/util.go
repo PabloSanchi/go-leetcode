@@ -4,27 +4,17 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"splitwise/domain/dto"
-	"sync"
 	"time"
 )
 
 var (
-	SECRET_KEY    []byte = []byte("secret-key")
-	utilSingleton *Util  = nil
-	lock                 = &sync.Mutex{}
+	SECRET_KEY []byte = []byte("secret-key")
 )
 
 type Util struct{}
 
 func NewUtil() *Util {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if utilSingleton == nil {
-		utilSingleton = &Util{}
-	}
-
-	return utilSingleton
+	return &Util{}
 }
 
 func (u *Util) GenerateJwt(user *dto.UserInfo) (string, error) {

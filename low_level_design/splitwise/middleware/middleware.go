@@ -13,10 +13,8 @@ type Middleware struct {
 	util *util.Util
 }
 
-func NewMiddleware() *Middleware {
-	return &Middleware{
-		util: util.NewUtil(),
-	}
+func NewMiddleware(util *util.Util) *Middleware {
+	return &Middleware{util: util}
 }
 
 func (m *Middleware) WithAuth(next http.HandlerFunc) http.HandlerFunc {

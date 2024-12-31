@@ -28,7 +28,7 @@ func main() {
 	slog.Info("server started successfully", "port", PORT)
 
 	utils := util.NewUtil()
-	md := middleware.NewMiddleware()
+	md := middleware.NewMiddleware(utils)
 
 	userRepository := repository.NewUserRepositoryImpl(db, utils)
 	authService := service.NewAuthService(userRepository)
