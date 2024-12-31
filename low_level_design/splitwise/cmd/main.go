@@ -6,6 +6,7 @@ import (
 	"os"
 	"splitwise/config"
 	"splitwise/handler"
+	"splitwise/middleware"
 	"splitwise/repository"
 	"splitwise/service"
 )
@@ -25,15 +26,21 @@ func main() {
 	slog.Info("connection to db successful")
 	slog.Info("server started successfully", "port", PORT)
 
+	middleware := middleware.NewMiddleware()
+
 	userRepository := repository.NewUserRepositoryImpl(db)
 	authService := service.NewAuthService(userRepository)
+	userService := service.NewUserService(userRepository)
 	authHandler := handler.NewAuthHandler(authService)
+	userhandler := handler.NewUserHandler(userService)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc(endpoint("auth/signup"), authHandler.Signup)
 	mux.HandleFunc(endpoint("auth/login"), authHandler.Login)
 	mux.HandleFunc(endpoint("auth/logout"), authHandler.Logout)
+
+	mux.HandleFunc(endpoint("users/me"), middleware.WithAuth(userhandler.Me))
 
 	if err := http.ListenAndServe(PORT, mux); err != nil {
 		slog.Error("error starting server", "error", err)

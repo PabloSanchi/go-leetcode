@@ -57,6 +57,23 @@ func (u *Util) ValidateJwt(tokenString string) (bool, error) {
 	return token.Valid, nil
 }
 
+func (u *Util) GetJwtClaims(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return SECRET_KEY, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, err
+	}
+
+	return claims, nil
+}
+
 func (u *Util) HashPassword(password string) (string, error) {
 	encrypted, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
