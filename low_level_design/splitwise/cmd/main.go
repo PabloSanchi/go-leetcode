@@ -26,7 +26,7 @@ func main() {
 	slog.Info("connection to db successful")
 	slog.Info("server started successfully", "port", PORT)
 
-	middleware := middleware.NewMiddleware()
+	md := middleware.NewMiddleware()
 
 	userRepository := repository.NewUserRepositoryImpl(db)
 	authService := service.NewAuthService(userRepository)
@@ -40,7 +40,7 @@ func main() {
 	mux.HandleFunc(endpoint("auth/login"), authHandler.Login)
 	mux.HandleFunc(endpoint("auth/logout"), authHandler.Logout)
 
-	mux.HandleFunc(endpoint("users/me"), middleware.WithAuth(userhandler.Me))
+	mux.HandleFunc(endpoint("users/me"), md.WithAuth(userhandler.Me))
 
 	if err := http.ListenAndServe(PORT, mux); err != nil {
 		slog.Error("error starting server", "error", err)
