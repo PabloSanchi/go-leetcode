@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	PORT string = ":8080"
+	VERSION string = "v1"
+	PORT    string = ":8080"
 )
 
 func main() {
@@ -30,9 +31,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/v1/auth/signup", authHandler.Signup)
-	mux.HandleFunc("/api/v1/auth/login", authHandler.Login)
-	mux.HandleFunc("/api/v1/auth/logout", authHandler.Logout)
+	mux.HandleFunc("/api/{VERSION}/auth/signup", authHandler.Signup)
+	mux.HandleFunc("/api/{VERSION}/auth/login", authHandler.Login)
+	mux.HandleFunc("/api/{VERSION}/auth/logout", authHandler.Logout)
 
 	if err := http.ListenAndServe(PORT, mux); err != nil {
 		slog.Error("error starting server", "error", err)
