@@ -4,18 +4,21 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"splitwise/domain/dto"
 	"splitwise/middleware"
 	"splitwise/service"
+	"splitwise/util"
 )
 
 type Auth struct {
 	authService *service.Auth
+	util        *util.Util
 }
 
 func NewAuthHandler(authService *service.Auth) *Auth {
-	return &Auth{authService: authService}
+	return &Auth{authService: authService, util: util.NewUtil()}
 }
 
 func (ah *Auth) Signup(w http.ResponseWriter, r *http.Request) {
@@ -25,13 +28,19 @@ func (ah *Auth) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtString, err := ah.authService.Signup(&user)
+	userInfo, err := ah.authService.Signup(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	http.SetCookie(w, createAuthCookie(jwtString))
+	token, err := ah.util.GenerateJwt(userInfo)
+	if err != nil {
+		slog.Error("error generating token", "error", err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	http.SetCookie(w, createAuthCookie(token))
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -42,8 +51,15 @@ func (ah *Auth) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtString, err := ah.authService.Login(&user)
+	userInfo, err := ah.authService.Login(&user)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	jwtString, err := ah.util.GenerateJwt(userInfo)
+	if err != nil {
+		slog.Error("error generating token", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

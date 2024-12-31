@@ -3,6 +3,7 @@ package util
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"splitwise/domain/dto"
 	"sync"
 	"time"
 )
@@ -26,11 +27,12 @@ func NewUtil() *Util {
 	return utilSingleton
 }
 
-func (u *Util) GenerateJwt(email string) (string, error) {
+func (u *Util) GenerateJwt(user *dto.UserInfo) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"email": email,
+			"name":  user.Name,
+			"email": user.Email,
 			"exp":   time.Now().Add(24 * time.Hour).Unix(),
 		},
 	)

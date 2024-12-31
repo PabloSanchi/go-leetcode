@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"splitwise/domain/dto"
 	"splitwise/repository"
-	"splitwise/util"
 )
 
 const (
@@ -14,43 +13,37 @@ const (
 
 type Auth struct {
 	userRepository repository.UserRepository
-	util           *util.Util
 }
 
 func NewAuthService(userRepository repository.UserRepository) *Auth {
-	return &Auth{
-		userRepository: userRepository,
-		util:           util.NewUtil(),
-	}
+	return &Auth{userRepository: userRepository}
 }
 
-func (as *Auth) Signup(user *dto.User) (string, error) {
-	if _, err := as.userRepository.CreateUser(user); err != nil {
-		slog.Error("error creating user", "error", err)
-		return "", fmt.Errorf(AUTH_ERROR)
-	}
-
-	token, err := as.util.GenerateJwt(user.Email)
+func (as *Auth) Signup(user *dto.User) (*dto.UserInfo, error) {
+	var userInfo *dto.UserInfo
+	id, err := as.userRepository.CreateUser(user)
 	if err != nil {
-		slog.Error("error generating token", "error", err)
-		return "", fmt.Errorf(AUTH_ERROR)
+		slog.Error("error creating user", "error", err)
+		return userInfo, fmt.Errorf(AUTH_ERROR)
 	}
-	return token, nil
+
+	userInfo = &dto.UserInfo{
+		Id:    id,
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	return userInfo, nil
 }
 
-func (as *Auth) Login(user *dto.User) (string, error) {
+func (as *Auth) Login(user *dto.User) (*dto.UserInfo, error) {
 	if !as.userRepository.VerifyUser(user) {
 		slog.Error("error verifying user")
-		return "", fmt.Errorf(AUTH_ERROR)
+		var userInfo *dto.UserInfo
+		return userInfo, fmt.Errorf(AUTH_ERROR)
 	}
 
-	token, err := as.util.GenerateJwt(user.Email)
-	if err != nil {
-		slog.Error("error generating token", "error", err)
-		return "", fmt.Errorf(AUTH_ERROR)
-	}
-
-	return token, nil
+	return as.userRepository.GetUserByEmail(user.Email), nil
 }
 
 func (as *Auth) VerifyUser(user *dto.User) bool {
