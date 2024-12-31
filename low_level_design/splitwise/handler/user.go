@@ -13,8 +13,8 @@ type User struct {
 	util        *util.Util
 }
 
-func NewUserHandler(userService *service.User) *User {
-	return &User{userService: userService, util: util.NewUtil()}
+func NewUserHandler(userService *service.User, util *util.Util) *User {
+	return &User{userService: userService, util: util}
 }
 
 func (u *User) Me(w http.ResponseWriter, r *http.Request) {

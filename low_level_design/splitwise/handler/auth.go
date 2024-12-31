@@ -17,8 +17,8 @@ type Auth struct {
 	util        *util.Util
 }
 
-func NewAuthHandler(authService *service.Auth) *Auth {
-	return &Auth{authService: authService, util: util.NewUtil()}
+func NewAuthHandler(authService *service.Auth, util *util.Util) *Auth {
+	return &Auth{authService: authService, util: util}
 }
 
 func (ah *Auth) Signup(w http.ResponseWriter, r *http.Request) {

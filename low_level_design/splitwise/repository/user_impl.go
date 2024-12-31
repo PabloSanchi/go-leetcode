@@ -12,10 +12,10 @@ type UserRepositoryImpl struct {
 	util *util.Util
 }
 
-func NewUserRepositoryImpl(db *gorm.DB) UserRepository {
+func NewUserRepositoryImpl(db *gorm.DB, util *util.Util) UserRepository {
 	return &UserRepositoryImpl{
 		db:   db,
-		util: util.NewUtil(),
+		util: util,
 	}
 }
 
