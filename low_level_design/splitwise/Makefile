@@ -5,6 +5,7 @@ run:
 
 build:
 	@echo "Building the app..."
+	@touch splitwise.db
 	@go build -o bin/app cmd/main.go
 
 test:
@@ -17,4 +18,5 @@ lint:
 
 clean:
 	@echo "Cleaning build artifacts..."
-	@rm -rf bin/app
+	@rm -rf bin
+	@rm -rf splitwise.db
