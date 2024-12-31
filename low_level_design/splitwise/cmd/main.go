@@ -31,13 +31,17 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/{VERSION}/auth/signup", authHandler.Signup)
-	mux.HandleFunc("/api/{VERSION}/auth/login", authHandler.Login)
-	mux.HandleFunc("/api/{VERSION}/auth/logout", authHandler.Logout)
+	mux.HandleFunc(endpoint("auth/signup"), authHandler.Signup)
+	mux.HandleFunc(endpoint("auth/login"), authHandler.Login)
+	mux.HandleFunc(endpoint("auth/logout"), authHandler.Logout)
 
 	if err := http.ListenAndServe(PORT, mux); err != nil {
 		slog.Error("error starting server", "error", err)
 		os.Exit(1)
 	}
 
+}
+
+func endpoint(path string) string {
+	return "/api/" + VERSION + "/" + path
 }
