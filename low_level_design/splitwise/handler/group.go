@@ -78,7 +78,7 @@ func (gh *Group) AddUsersToGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := gh.groupService.AddUsersToGroup(uint(groupId), GroupUsers.UserIds); err != nil {
+	if err := gh.groupService.AddUsers(uint(groupId), GroupUsers.UserIds); err != nil {
 		slog.Error("error adding users to group", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return

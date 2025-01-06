@@ -17,7 +17,7 @@ type Group struct {
 	Name        string `gorm:"unique;not null"`
 	Description string
 	Users       []*User    `gorm:"many2many:user_groups;"`
-	Expenses    []*Expense `gorm:"foreignKey:GroupID;constraint:OnDelete:CASCADE;"`
+	Expenses    []*Expense `gorm:"foreignKey:GroupId;constraint:OnDelete:CASCADE;"`
 }
 
 // Expense represents an expense made by a user in a group.
@@ -26,19 +26,19 @@ type Expense struct {
 	gorm.Model
 	Description string          `gorm:"not null"`
 	Amount      float64         `gorm:"not null"`
-	GroupID     uint            `gorm:"not null;index"`
-	Group       Group           `gorm:"foreignKey:GroupID;constraint:OnDelete:CASCADE;"`
-	PayerID     uint            `gorm:"not null;index"`
-	Payer       User            `gorm:"foreignKey:PayerID;constraint:OnDelete:CASCADE;"`
-	Shares      []*ExpenseShare `gorm:"foreignKey:ExpenseID;constraint:OnDelete:CASCADE;"`
+	GroupId     uint            `gorm:"not null;index"`
+	Group       Group           `gorm:"foreignKey:GroupId;constraint:OnDelete:CASCADE;"`
+	PayerId     uint            `gorm:"not null;index"`
+	Payer       User            `gorm:"foreignKey:PayerId;constraint:OnDelete:CASCADE;"`
+	Shares      []*ExpenseShare `gorm:"foreignKey:ExpenseId;constraint:OnDelete:CASCADE;"`
 }
 
 // ExpenseShare represents how much a specific user owes for a specific expense.
 type ExpenseShare struct {
-	UserID    uint    `gorm:"primaryKey;not null;index"`
-	User      User    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
-	ExpenseID uint    `gorm:"primaryKey;not null;index"`
-	Expense   Expense `gorm:"foreignKey:ExpenseID;constraint:OnDelete:CASCADE;"`
+	UserId    uint    `gorm:"primaryKey;not null;index"`
+	User      User    `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE;"`
+	ExpenseId uint    `gorm:"primaryKey;not null;index"`
+	Expense   Expense `gorm:"foreignKey:ExpenseId;constraint:OnDelete:CASCADE;"`
 	Amount    float64 `gorm:"not null"`
 	IsSettled bool    `gorm:"not null"`
 }

@@ -3,12 +3,9 @@ package util
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	constants "splitwise"
 	"splitwise/domain/dto"
 	"time"
-)
-
-var (
-	SECRET_KEY []byte = []byte("secret-key")
 )
 
 type Util struct{}
@@ -27,7 +24,7 @@ func (u *Util) GenerateJwt(user *dto.UserInfo) (string, error) {
 		},
 	)
 
-	tokenString, err := token.SignedString(SECRET_KEY)
+	tokenString, err := token.SignedString(constants.SECRET_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -36,10 +33,7 @@ func (u *Util) GenerateJwt(user *dto.UserInfo) (string, error) {
 }
 
 func (u *Util) ValidateJwt(tokenString string) (bool, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return SECRET_KEY, nil
-	})
-
+	token, err := parseJwt(tokenString)
 	if err != nil {
 		return false, err
 	}
@@ -48,10 +42,7 @@ func (u *Util) ValidateJwt(tokenString string) (bool, error) {
 }
 
 func (u *Util) GetJwtClaims(tokenString string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return SECRET_KEY, nil
-	})
-
+	token, err := parseJwt(tokenString)
 	if err != nil {
 		return nil, err
 	}
@@ -76,4 +67,10 @@ func (u *Util) HashPassword(password string) (string, error) {
 func (u *Util) VerifyPassword(hashedPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
+}
+
+func parseJwt(tokenString string) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return constants.SECRET_KEY, nil
+	})
 }

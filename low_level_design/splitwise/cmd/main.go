@@ -5,17 +5,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	constants "splitwise"
 	"splitwise/config"
 	"splitwise/handler"
 	"splitwise/middleware"
 	"splitwise/repository"
 	"splitwise/service"
 	"splitwise/util"
-)
-
-const (
-	VERSION string = "v1"
-	PORT    string = ":8080"
 )
 
 func main() {
@@ -26,7 +22,7 @@ func main() {
 	}
 
 	slog.Info("connection to db successful")
-	slog.Info("server started successfully", "port", PORT)
+	slog.Info("server started successfully", "port", constants.PORT)
 
 	utils := util.NewUtil()
 	md := middleware.NewMiddleware(utils)
@@ -52,7 +48,7 @@ func main() {
 	router.HandleFunc(endpoint("groups/{id}"), md.WithAuth(groupHandler.GetGroup))
 	router.HandleFunc(endpoint("groups/{id}/users"), md.WithAuth(groupHandler.AddUsersToGroup))
 
-	if err := http.ListenAndServe(PORT, router); err != nil {
+	if err := http.ListenAndServe(constants.PORT, router); err != nil {
 		slog.Error("error starting server", "error", err)
 		os.Exit(1)
 	}
@@ -60,5 +56,5 @@ func main() {
 }
 
 func endpoint(path string) string {
-	return "/api/" + VERSION + "/" + path
+	return "/api/" + constants.VERSION + "/" + path
 }

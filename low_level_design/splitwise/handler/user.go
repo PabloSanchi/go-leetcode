@@ -3,7 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"splitwise/middleware"
+	constants "splitwise"
 	"splitwise/service"
 	"splitwise/util"
 )
@@ -18,7 +18,7 @@ func NewUserHandler(userService *service.User, util *util.Util) *User {
 }
 
 func (u *User) Me(w http.ResponseWriter, r *http.Request) {
-	token, err := r.Cookie(middleware.AUTH_COOKIE)
+	token, err := r.Cookie(constants.AUTH_COOKIE)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

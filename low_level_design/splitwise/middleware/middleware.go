@@ -2,11 +2,8 @@ package middleware
 
 import (
 	"net/http"
+	constants "splitwise"
 	"splitwise/util"
-)
-
-const (
-	AUTH_COOKIE string = "auth"
 )
 
 type Middleware struct {
@@ -19,7 +16,7 @@ func NewMiddleware(util *util.Util) *Middleware {
 
 func (m *Middleware) WithAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, err := r.Cookie(AUTH_COOKIE)
+		token, err := r.Cookie(constants.AUTH_COOKIE)
 		if err != nil {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return

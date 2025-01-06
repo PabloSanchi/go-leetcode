@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	constants "splitwise"
 	"splitwise/domain/dto"
-	"splitwise/middleware"
 	"splitwise/service"
 	"splitwise/util"
 )
@@ -75,7 +75,7 @@ func (ah *Auth) Logout(w http.ResponseWriter, r *http.Request) {
 
 func createAuthCookie(jwtString string) *http.Cookie {
 	return &http.Cookie{
-		Name:     middleware.AUTH_COOKIE,
+		Name:     constants.AUTH_COOKIE,
 		Value:    jwtString,
 		Path:     "/",
 		HttpOnly: true,

@@ -22,6 +22,6 @@ func (g *Group) GetGroupById(id uint) *dto.Group {
 	return group
 }
 
-func (g *Group) AddUsersToGroup(groupId uint, userIds []uint) error {
-	return g.groupRepository.AddUsersToGroup(groupId, userIds)
+func (g *Group) AddUsers(groupId uint, userIds []uint) error {
+	return g.groupRepository.AddUsers(groupId, userIds)
 }
