@@ -3,11 +3,11 @@ package constants
 import "os"
 
 var (
-	VERSION     string = getEnv("version", "v1")
-	PORT        string = getEnv("port", ":8080")
-	AUTH_COOKIE string = getEnv("auth_cookie", "auth")
-	SECRET_KEY  []byte = []byte(getEnv("secret", "secret-key"))
-	CSRF_KEY    []byte = []byte(getEnv("csrf_key", "csrf-key"))
+	VERSION     = getEnv("version", "v1")
+	PORT        = getEnv("port", ":8080")
+	AUTH_COOKIE = getEnv("auth_cookie", "auth")
+	SECRET_KEY  = []byte(getEnv("secret", "secret-key"))
+	CSRF_KEY    = []byte(getEnv("csrf_key", "csrf-key"))
 )
 
 func getEnv(key, fallback string) string {
