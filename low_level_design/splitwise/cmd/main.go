@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
@@ -48,7 +49,8 @@ func main() {
 	router.HandleFunc(endpoint("groups/{id}"), md.WithAuth(groupHandler.GetGroup))
 	router.HandleFunc(endpoint("groups/{id}/users"), md.WithAuth(groupHandler.AddUsersToGroup))
 
-	if err := http.ListenAndServe(constants.PORT, router); err != nil {
+	CSRF := csrf.Protect(constants.CSRF_KEY)
+	if err := http.ListenAndServe(constants.PORT, CSRF(router)); err != nil {
 		slog.Error("error starting server", "error", err)
 		os.Exit(1)
 	}
