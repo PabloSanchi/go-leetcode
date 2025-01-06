@@ -17,6 +17,8 @@ func InitDb() (*gorm.DB, error) {
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Group{},
+		&models.Expense{},
+		&models.ExpenseShare{},
 	); err != nil {
 		slog.Error("error migrating user table", slog.Any("err", err))
 		return nil, err

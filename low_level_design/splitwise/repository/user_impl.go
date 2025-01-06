@@ -2,7 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
-	"splitwise/domain/db"
+	models "splitwise/domain/db"
 	"splitwise/domain/dto"
 	"splitwise/util"
 )
@@ -25,7 +25,7 @@ func (ur *UserRepositoryImpl) CreateUser(user *dto.User) (uint, error) {
 		return 0, err
 	}
 
-	userEntity := &db.User{
+	userEntity := &models.User{
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: hashedPassword,
@@ -38,7 +38,7 @@ func (ur *UserRepositoryImpl) CreateUser(user *dto.User) (uint, error) {
 }
 
 func (ur *UserRepositoryImpl) GetUserById(id uint) *dto.UserInfo {
-	userEntity := &db.User{}
+	userEntity := &models.User{}
 	ur.db.First(userEntity, id)
 
 	return &dto.UserInfo{
@@ -49,7 +49,7 @@ func (ur *UserRepositoryImpl) GetUserById(id uint) *dto.UserInfo {
 }
 
 func (ur *UserRepositoryImpl) GetUserByEmail(email string) *dto.UserInfo {
-	userEntity := &db.User{}
+	userEntity := &models.User{}
 	ur.db.Where("email = ?", email).First(userEntity)
 
 	return &dto.UserInfo{
@@ -60,7 +60,7 @@ func (ur *UserRepositoryImpl) GetUserByEmail(email string) *dto.UserInfo {
 }
 
 func (ur *UserRepositoryImpl) VerifyUser(user *dto.User) bool {
-	userEntity := &db.User{}
+	userEntity := &models.User{}
 	ur.db.Where("email = ?", user.Email).First(userEntity)
 
 	return ur.util.VerifyPassword(userEntity.Password, user.Password)

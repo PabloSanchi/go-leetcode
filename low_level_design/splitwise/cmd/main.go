@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
 	"os"
@@ -31,20 +32,27 @@ func main() {
 	md := middleware.NewMiddleware(utils)
 
 	userRepository := repository.NewUserRepositoryImpl(db, utils)
+	groupRepository := repository.NewGroupRepositoryImpl(db)
 	authService := service.NewAuthService(userRepository)
 	userService := service.NewUserService(userRepository)
+	groupService := service.NewGroupService(groupRepository)
 	authHandler := handler.NewAuthHandler(authService, utils)
 	userHandler := handler.NewUserHandler(userService, utils)
+	groupHandler := handler.NewGroupHandler(groupService)
 
-	mux := http.NewServeMux()
+	router := mux.NewRouter()
 
-	mux.HandleFunc(endpoint("auth/signup"), authHandler.Signup)
-	mux.HandleFunc(endpoint("auth/login"), authHandler.Login)
-	mux.HandleFunc(endpoint("auth/logout"), authHandler.Logout)
+	router.HandleFunc(endpoint("auth/signup"), authHandler.Signup)
+	router.HandleFunc(endpoint("auth/login"), authHandler.Login)
+	router.HandleFunc(endpoint("auth/logout"), authHandler.Logout)
 
-	mux.HandleFunc(endpoint("users/me"), md.WithAuth(userHandler.Me))
+	router.HandleFunc(endpoint("users/me"), md.WithAuth(userHandler.Me))
 
-	if err := http.ListenAndServe(PORT, mux); err != nil {
+	router.HandleFunc(endpoint("groups"), md.WithAuth(groupHandler.CreateGroup))
+	router.HandleFunc(endpoint("groups/{id}"), md.WithAuth(groupHandler.GetGroup))
+	router.HandleFunc(endpoint("groups/{id}/users"), md.WithAuth(groupHandler.AddUsersToGroup))
+
+	if err := http.ListenAndServe(PORT, router); err != nil {
 		slog.Error("error starting server", "error", err)
 		os.Exit(1)
 	}
