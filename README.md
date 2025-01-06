@@ -24,4 +24,5 @@ Remember that in order to learn, is better to do it by yourself first.
 - Low Level Design Problems: Solving low level design problems (good for interviews)
   - [Parking Lot](low_level_design/parking_lot)
   - [PubSub System](low_level_design/pubsub_system)
+  - [Splitwise](low_level_design/splitwise)
 - Coding Challenges: John Crickett coding challenges go solutions
