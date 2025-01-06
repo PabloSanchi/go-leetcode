@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	constants "splitwise"
+	"splitwise"
 	"splitwise/domain/dto"
 	"time"
 )

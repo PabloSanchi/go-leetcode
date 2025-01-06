@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"net/http"
-	constants "splitwise"
+	"splitwise"
 	"splitwise/util"
 )
 

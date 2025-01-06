@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	constants "splitwise"
+	"splitwise"
 	"splitwise/domain/dto"
 	"splitwise/service"
 	"splitwise/util"

@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	constants "splitwise"
+	"splitwise"
 	"splitwise/config"
 	"splitwise/handler"
 	"splitwise/middleware"
