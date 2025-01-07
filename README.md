@@ -16,6 +16,7 @@ Remember that in order to learn, is better to do it by yourself first.
   - [Maximal Score After Applying K Ops](trees/maximal_score_after_applying_k_ops)
   - [Merge K Lists](trees/merge_k_lists)
 - Patterns: Interesting patterns for golang
+  - [Chain of Responsibility](patterns/chain_of_responsibility)
   - [Functional Builder](patterns/functional_builder)
   - [Pipeline](patterns/pipeline)
 - Misc (Go Concepts, Data Structures implementations, ...)
